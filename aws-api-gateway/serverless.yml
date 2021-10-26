@@ -1,0 +1,72 @@
+service: aws-api-gateway
+frameworkVersion: '2'
+
+custom:
+  tableName: 'users-table-${sls:stage}'
+  region: ${file(../config/config.${opt:stage, 'dev'}.json):region}
+  jwtKey: ${file(../config/config.${opt:stage, 'dev'}.json):jwtKey}
+  customDomain:
+    domainName: ${file(../config/config.${opt:stage, 'dev'}.json):apiDomain}
+    basePath: ''
+    stage: ${opt:stage, 'dev'}
+    createRoute53Record: false
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: '20201221'
+  region: ${self:custom.region}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [ UsersTable, Arn ]
+  environment:
+    USERS_TABLE: ${self:custom.tableName}
+    JWT_SECRET : ${self:custom.jwtKey}
+
+functions:
+  authorize:
+    handler: functions/authorize.handler
+  login:
+    handler: functions/login.handler
+    events:
+      - http:
+          path: sessions
+          method: POST
+          cors: true          
+  user:
+    handler: functions/user.handler
+    events:
+      - http:
+          path: users
+          method: [POST, GET]
+          cors: true
+          authorizer: authorize
+      - http:
+          path: user/{proxy+}
+          method: [POST, GET]
+          cors: true
+          authorizer: authorize
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.tableName}

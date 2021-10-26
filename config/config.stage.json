@@ -1,0 +1,5 @@
+{
+    "apiDomain" : "api.domain.com",
+    "region" : "us-east-1",
+    "jwtKey" : "userKey!@!Stage"
+}

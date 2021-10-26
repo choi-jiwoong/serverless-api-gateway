@@ -1,0 +1,6 @@
+cd aws-api-gateway
+npm install
+export AWS_ACCESS_KEY_ID=[ACCESS_KEY]
+export AWS_SECRET_ACCESS_KEY=[SECRET_KEY]
+
+serverless deploy --stage dev
