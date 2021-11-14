@@ -12,6 +12,11 @@ $ npm install -g serverless
 $ serverless --version
 ```
 
+### install serverless-domain-manager 
+```shell
+$ serverless plugin install -n serverless-domain-manager 
+```
+
 ### AWS - [Credentials](https://www.serverless.com/framework/docs/providers/aws/guide/credentials)
 
 1. Login to your AWS account and go to the Identity & Access Management (IAM) page.
